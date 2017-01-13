@@ -1,0 +1,136 @@
+@using Alloy.EpiFormsCustom.Elements
+@using EPiServer.Forms.Helpers.Internal
+@model Alloy.EpiFormsCustom.Elements.MultipleFileUploadElementBlock
+
+@{
+    var formElement = Model.FormElement;
+    var labelText = Model.Label;
+    var errorMessage = Model.GetErrorMessage();
+}
+
+<div class="multiple-file-upload form-group Form__Element FormFileUpload @Model.GetValidationCssClasses()" data-max-files="@Model.MaxNumberOfFiles" data-epiforms-element-name="@formElement.ElementName">
+    <label for="@formElement.Guid" class="Form__Element__Caption control-label">
+        @labelText
+    </label>
+    <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Lägg till fil</button>
+    <div class="multiple-file-upload__file-group hidden js-file-group">
+        <input class="hidden FormFileUpload__Input js-file-input" name="@formElement.ElementName" id="@formElement.Guid" type="file"
+               @if (!string.IsNullOrEmpty(Model.FileExtensions)) { @: accept="@Model.FileExtensions"
+               }
+               @Model.AttributesString />
+        <div class="js-file-name">
+            <span class="multiple-file-upload__delete-button btn btn-danger js-delete-file">-</span>
+        </div>
+    </div>
+    <div class="FormFileUpload__PostedFile"></div>
+    <div class="js-custom-validation Form__Element__ValidationError"></div>
+    <div data-epiforms-linked-name="@formElement.ElementName" class="Form__Element__ValidationError">@errorMessage</div>
+</div>
+
+<script>
+    var multipleFileUpload = (function($) {
+            var inputFieldSelector = ".js-file-input";
+            var addNewFileButtonSelector = ".js-add-file";
+            var fileGroupSelector = ".js-file-group";
+            var fileNameDivSelector = ".js-file-name";
+            var deleteFileSelector = ".js-delete-file";
+
+            function init() {
+                MultipleFileUploadInit();
+
+                function injectValidators() {
+                    if (epi.EPiServer.Forms.Validators == true) {
+                        multipleFilleUploadValidate = function(fieldName, fieldValue, validatorMetaData) {
+                            return { isValid: true };
+                        };
+                        $.extend(epi.EPiServer.Forms.Validators,
+                        {
+                            "Alloy.EpiFormsCustom.Elements.TotalMaxFileSizeValidator": multipleFilleUploadValidate
+                        });
+                    }
+                }
+
+                setTimeout(injectValidators, 250);
+            }
+
+            function MultipleFileUploadInit() {
+                var $addFileButtons = $(addNewFileButtonSelector);
+                var $inputElements = $(inputFieldSelector);
+                $inputElements.each(function() {
+                    $(this).change(onFileAdd);
+                });
+                $addFileButtons.each(function() {
+                    $(this).click(addNewFile);
+                });
+            }
+
+            function onFileAdd() {
+                var $inputElement = $(this);
+                var $fileGroup = $inputElement.closest(fileGroupSelector);
+                var file = $inputElement.get(0).files;
+                if (file.length == 1) {
+                    var $fileName = $fileGroup.find(fileNameDivSelector);
+                    var html = $fileName.html();
+                    html = $inputElement.get(0).files[0].name + html;
+                    $fileName.html(html);
+                    $fileName.find(deleteFileSelector).click(deleteFile);
+                    $fileGroup.removeClass("hidden");
+                }
+            }
+
+            function deleteFile() {
+                var $fileGroup = $(this).closest(fileGroupSelector);
+                $fileGroup.remove();
+            }
+
+            function addNewFile(e) {
+                e.preventDefault();
+                var addButton = this;
+                var fileGroup = $(addButton).siblings(fileGroupSelector).last();
+                var inputElement = fileGroup.children(inputFieldSelector);
+                var $name = $(inputElement).attr("name").split('-');
+                var number = 1;
+                if ($name.length > 1) {
+                    number = parseInt($name[1]);
+                    number++;
+                }
+                var newInputElement = $(inputElement).clone().attr("name", $name[0] + "-" + number);
+                newInputElement.change(onFileAdd);
+                var newFileGroup = $(fileGroup).clone();
+                $(newFileGroup).children(inputFieldSelector).replaceWith(newInputElement);
+                $(fileGroup).after(newFileGroup);
+                $(inputElement).click();
+            }
+
+            return {
+                init: init
+            }
+        })(jQuery)
+        .init();
+
+    //Front end validation not implemented but a function is needed otherwise epiforms js crashes.
+    totalMaxFileSizeValidator = function (fieldName, fieldValue, validatorMetaData) {
+        //Write front end validation here
+        return { isValid: true };
+    };
+
+    maxNumberOfFilesValidator = function (fieldName, fieldValue, validatorMetaData) {
+        //Write front end validation here
+        return { isValid: true };
+    };
+    
+    function waitForElement() {
+        if (typeof epi.EPiServer.Forms.Validators !== "undefined") {
+            $.extend(epi.EPiServer.Forms.Validators,
+            {
+                '@typeof(TotalMaxFileSizeValidator).FullName': totalMaxFileSizeValidator,
+                '@typeof(MaxNumberOfFilesValidator).FullName': maxNumberOfFilesValidator,
+            });
+        }
+        else {
+            setTimeout(waitForElement, 250);
+        }
+    }
+    waitForElement();
+
+</script>
