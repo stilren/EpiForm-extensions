@@ -112,8 +112,6 @@ namespace Alloy.EpiFormsCustom.Actors
             IEnumerable<string> elementIds =
                 friendlyNameInfos.Where(f => f.FormatType == FormatType.Link).Select(f => f.ElementId);
             IEnumerable<DownloadFile> uploadElementFiles = GetUrls(elementIds, SubmissionData.Data);
-            this._placeHolderService.GetFriendlyNamePlaceHolders(this.HttpRequestContext, this.SubmissionData,
-                friendlyNameInfos, false).ToList();
 
             if (uploadElementFiles.Any())
             {
