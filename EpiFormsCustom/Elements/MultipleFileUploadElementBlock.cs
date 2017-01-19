@@ -69,6 +69,16 @@ namespace Alloy.EpiFormsCustom.Elements
                 return (object)httpPostedFileList;
             return (object)HttpContext.Current.Request.Form[this.FormElement.ElementName];
         }
+        
+        public string GetMaxNumberOfFilesValidatorNamespace()
+        {
+            return typeof(MaxNumberOfFilesValidator).FullName; //This is also used for epiforms client side validation
+        }
+
+        public string GetTotalFileSizeValidatorNamespace()
+        {
+            return typeof(TotalMaxFileSizeValidator).FullName; //This is also used for epiforms client side validation
+        }
 
         [Display(GroupName = "Information", Order = -5000)]
         [UIHint("FormsValidators")]
@@ -77,7 +87,7 @@ namespace Alloy.EpiFormsCustom.Elements
             get
             {
                 string separator = "|||";
-                string str = string.Join(separator, typeof(MaxNumberOfFilesValidator).FullName, typeof(TotalMaxFileSizeValidator).FullName, typeof(AllowedExtensionsValidator).FullName, typeof(MaxFileSizeValidator).FullName);
+                string str = string.Join(separator, GetMaxNumberOfFilesValidatorNamespace(), GetTotalFileSizeValidatorNamespace(), typeof(AllowedExtensionsValidator).FullName, typeof(MaxFileSizeValidator).FullName);
                 string propertyValue = this.GetPropertyValue(content => content.Validators);
                 if (string.IsNullOrEmpty(propertyValue))
                     return str;
