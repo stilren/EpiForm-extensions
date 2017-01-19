@@ -14,7 +14,7 @@
     <label for="@formElement.Guid" class="Form__Element__Caption control-label">
         @labelText
     </label>
-    <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Lägg till fil</button>
+    <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Add file</button>
     <div class="multiple-file-upload__file-group hidden js-file-group">
         <input class="hidden FormFileUpload__Input js-file-input" name="@formElement.ElementName" id="@formElement.Guid" type="file"
                @if (!string.IsNullOrEmpty(Model.FileExtensions))
