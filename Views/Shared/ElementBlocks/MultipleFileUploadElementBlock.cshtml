@@ -6,22 +6,26 @@
     var formElement = Model.FormElement;
     var labelText = Model.Label;
     var errorMessage = Model.GetErrorMessage();
+    var maxNoFileValidator = Model.GetMaxNumberOfFilesValidatorNamespace();
+    var totalFileSizeValidator = Model.GetTotalFileSizeValidatorNamespace();
 }
 
-<div class="multiple-file-upload form-group Form__Element FormFileUpload @Model.GetValidationCssClasses()" data-max-files="@Model.MaxNumberOfFiles" data-epiforms-element-name="@formElement.ElementName">
+<div class="js-multiple-file-upload multiple-file-upload form-group Form__Element FormFileUpload @Model.GetValidationCssClasses()" data-total-max-filesize-validator="@totalFileSizeValidator", data-max-no-files-validator="@maxNoFileValidator" data-epiforms-element-name="@formElement.ElementName">
     <label for="@formElement.Guid" class="Form__Element__Caption control-label">
         @labelText
     </label>
-    <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Add a new file</button>
+    <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Lägg till fil</button>
     <div class="multiple-file-upload__file-group hidden js-file-group">
         <input class="hidden FormFileUpload__Input js-file-input" name="@formElement.ElementName" id="@formElement.Guid" type="file"
-               @if (!string.IsNullOrEmpty(Model.FileExtensions)) { @: accept="@Model.FileExtensions"
+               @if (!string.IsNullOrEmpty(Model.FileExtensions))
+               {
+                   @:accept="@Model.FileExtensions"
                }
-               @Model.AttributesString />
+               @Model.AttributesString/>
         <div class="js-file-name">
             <span class="multiple-file-upload__delete-button btn btn-danger js-delete-file">-</span>
         </div>
-    </div>
+    </div>       
     <div class="FormFileUpload__PostedFile"></div>
     <div class="js-custom-validation Form__Element__ValidationError"></div>
     <div data-epiforms-linked-name="@formElement.ElementName" class="Form__Element__ValidationError">@errorMessage</div>
@@ -34,26 +38,11 @@
             var fileGroupSelector = ".js-file-group";
             var fileNameDivSelector = ".js-file-name";
             var deleteFileSelector = ".js-delete-file";
+            var multipleFileUploadElementSelector = ".js-multiple-file-upload";
+            var totalFileSizeValidatorData = "total-max-filesize-validator";
+            var maxNoFilesValidatorData = "max-no-files-validator";
 
             function init() {
-                MultipleFileUploadInit();
-
-                function injectValidators() {
-                    if (epi.EPiServer.Forms.Validators == true) {
-                        multipleFilleUploadValidate = function(fieldName, fieldValue, validatorMetaData) {
-                            return { isValid: true };
-                        };
-                        $.extend(epi.EPiServer.Forms.Validators,
-                        {
-                            "Alloy.EpiFormsCustom.Elements.TotalMaxFileSizeValidator": multipleFilleUploadValidate
-                        });
-                    }
-                }
-
-                setTimeout(injectValidators, 250);
-            }
-
-            function MultipleFileUploadInit() {
                 var $addFileButtons = $(addNewFileButtonSelector);
                 var $inputElements = $(inputFieldSelector);
                 $inputElements.each(function() {
@@ -62,7 +51,53 @@
                 $addFileButtons.each(function() {
                     $(this).click(addNewFile);
                 });
+                enableClientSideValidation()
             }
+            
+            function enableClientSideValidation() {
+                function waitForElement() {
+                    if (typeof (epi) !== "undefined" && typeof (epi.EPiServer.Forms.Validators) !== "undefined") {
+                        var customValidators = {};
+                        var maxNoFiles = $(multipleFileUploadElementSelector).data(maxNoFilesValidatorData);
+                        customValidators[maxNoFiles] = maxNumberOfFilesValidation;
+                        var totalFileSize = $(multipleFileUploadElementSelector).data(totalFileSizeValidatorData);
+                        customValidators[totalFileSize] = totalFileSizeValidation;
+                        $.extend(epi.EPiServer.Forms.Validators, customValidators);
+                    }
+                    else {
+                        setTimeout(waitForElement, 250);
+                    }
+                }
+                waitForElement();
+            };
+            
+            var totalFileSizeValidation = function (fieldName, fieldValue, validatorMetaData) {
+                element = $("div").find("[data-epiforms-element-name=" + fieldName + "]");
+                var totalSize = 0;
+                if (element.length) {
+                    var files = $(element).find("input")
+                    $(files).each(function () {
+                        if (typeof $(this)[0].files[0] != "undefined") {
+                            totalSize += $(this)[0].files[0].size;
+                        }
+                    });
+                    if (totalSize > validatorMetaData.model.totalSizeInBytes) {
+                        return { isValid: false, message: validatorMetaData.model.message };
+                    }
+                }
+                return { isValid: true };
+            };
+
+    var maxNumberOfFilesValidation = function (fieldName, fieldValue, validatorMetaData) {
+        element = $("div").find("[data-epiforms-element-name=" + fieldName + "]"); //the fieldValue passed is only the first inputfield. We need to find all of them
+        if (element.length) {
+            var numberOfFiles = $(element).find("input").length-1;
+            if (numberOfFiles > validatorMetaData.model.maxNoOfFiles) {
+                return { isValid: false, message: validatorMetaData.model.message };
+            }
+        }
+        return { isValid: true };
+    };
 
             function onFileAdd() {
                 var $inputElement = $(this);
@@ -107,30 +142,4 @@
             }
         })(jQuery)
         .init();
-
-    //Front end validation not implemented but a function is needed otherwise epiforms js crashes.
-    totalMaxFileSizeValidator = function (fieldName, fieldValue, validatorMetaData) {
-        //Write front end validation here
-        return { isValid: true };
-    };
-
-    maxNumberOfFilesValidator = function (fieldName, fieldValue, validatorMetaData) {
-        //Write front end validation here
-        return { isValid: true };
-    };
-    
-    function waitForElement() {
-        if (typeof epi.EPiServer.Forms.Validators !== "undefined") {
-            $.extend(epi.EPiServer.Forms.Validators,
-            {
-                '@typeof(TotalMaxFileSizeValidator).FullName': totalMaxFileSizeValidator,
-                '@typeof(MaxNumberOfFilesValidator).FullName': maxNumberOfFilesValidator,
-            });
-        }
-        else {
-            setTimeout(waitForElement, 250);
-        }
-    }
-    waitForElement();
-
 </script>

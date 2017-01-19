@@ -38,7 +38,7 @@ namespace Alloy.EpiFormsCustom.Elements
             {
                 var sizeValidationModel = new TotalMaxFileSizeValidationModel
                 {
-                    TotalSizeInBytes = uploadElementBlock.SizeInBytes
+                    TotalSizeInBytes = uploadElementBlock.TotalSizeInBytes
                 };
                 string str = string.Format(this._validationService.Service.GetValidatorMessage(this.GetType(), ""), uploadElementBlock.TotalFileSize == 0 ? uploadElementBlock.TotalSizeInBytes / 1048576 : uploadElementBlock.TotalFileSize);
                 sizeValidationModel.Message = str;
