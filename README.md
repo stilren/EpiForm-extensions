@@ -17,7 +17,6 @@ The element is not styled and looks like this on the Alloy Demo Site:
 
 Known problems
 * The element does not format correctly if you are using "Placeholders" with the Episerver default SendEmailAfterSubmissionActor.
-* There is no front end validation for the custom validators (on account of me being lazy)
 
 ###SendEmailWithFilesAsAttachment
 This actor is a copy of the default Episerver SendEmailAfterSubmissionActor except it includes uploaded files as Attachments in the email.
