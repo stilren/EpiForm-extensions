@@ -11,9 +11,8 @@
 }
 
 <div class="js-multiple-file-upload multiple-file-upload form-group Form__Element FormFileUpload @Model.GetValidationCssClasses()" data-total-max-filesize-validator="@totalFileSizeValidator", data-max-no-files-validator="@maxNoFileValidator" data-epiforms-element-name="@formElement.ElementName">
-    <label for="@formElement.Guid" class="Form__Element__Caption control-label @required">
+    <label for="@formElement.Guid" class="Form__Element__Caption control-label">
         @labelText
-        <span class="sr-only sr-only-focusable">@read</span>
     </label>'
     <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Lägg till fil</button>
     <div class="multiple-file-upload__file-group hidden js-file-group">
@@ -29,7 +28,7 @@
     </div>       
     <div class="FormFileUpload__PostedFile"></div>
     <div class="js-custom-validation Form__Element__ValidationError"></div>
-    <div data-epiforms-linked-name="@formElement.ElementName" class="Form__Element__ValidationError" style="@errormsgStyle">@errorMessage</div>
+    <div data-epiforms-linked-name="@formElement.ElementName" class="Form__Element__ValidationError">@errorMessage</div>
 </div>
 
 <script>
