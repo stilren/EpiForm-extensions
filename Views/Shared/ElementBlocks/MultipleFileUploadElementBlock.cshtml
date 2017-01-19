@@ -13,7 +13,7 @@
 <div class="js-multiple-file-upload multiple-file-upload form-group Form__Element FormFileUpload @Model.GetValidationCssClasses()" data-total-max-filesize-validator="@totalFileSizeValidator", data-max-no-files-validator="@maxNoFileValidator" data-epiforms-element-name="@formElement.ElementName">
     <label for="@formElement.Guid" class="Form__Element__Caption control-label">
         @labelText
-    </label>'
+    </label>
     <button class="btn btn-default multiple-file-upload__add-button js-add-file">+ Lägg till fil</button>
     <div class="multiple-file-upload__file-group hidden js-file-group">
         <input class="hidden FormFileUpload__Input js-file-input" name="@formElement.ElementName" id="@formElement.Guid" type="file"
